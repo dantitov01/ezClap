@@ -3,582 +3,1246 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PermitPilot — Permit & License Tracking</title>
+  <title>RailCore PMO — Construction Delivery Platform</title>
   <style>
     :root {
-      --paper: #f7f2e8;
-      --paper-2: #efe7d7;
-      --ink: #1f2a23;
-      --muted: #5f6e64;
-      --muted-2: #7f8b83;
-      --forest: #244734;
-      --forest-2: #315c45;
-      --olive: #6f7c4a;
-      --sand: #d7c4a4;
-      --clay: #b87547;
-      --line: #d5c8b1;
-      --white: #fffdf8;
-      --alert: #a14b38;
-      --ok: #3f6a4a;
-      --shadow: 0 12px 32px rgba(51, 43, 28, 0.10);
-      --shadow-lg: 0 28px 60px rgba(51, 43, 28, 0.14);
-      --radius: 22px;
-      --max: 1180px;
+      --bg: #0f1722;
+      --bg-soft: #162131;
+      --panel: #ffffff;
+      --panel-2: #f4f7fb;
+      --panel-3: #e9eef5;
+      --line: #d7dfeb;
+      --text: #152233;
+      --muted: #61748c;
+      --nav: #0d1623;
+      --nav-2: #142235;
+      --nav-text: #dbe6f5;
+      --nav-muted: #8ea2bc;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
+      --green: #0f9d66;
+      --amber: #cc8a15;
+      --red: #cb4a4a;
+      --violet: #7c3aed;
+      --shadow: 0 18px 48px rgba(15, 23, 34, 0.12);
+      --radius: 20px;
+      --radius-sm: 14px;
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html, body { margin: 0; min-height: 100%; }
     body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      color: var(--ink);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15)),
-        repeating-linear-gradient(0deg, rgba(88,74,50,0.02) 0px, rgba(88,74,50,0.02) 1px, transparent 1px, transparent 36px),
-        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #eef3f9 0%, #e8eef7 100%);
+      color: var(--text);
+    }
+    button, input, select, textarea { font: inherit; }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, var(--nav) 0%, var(--nav-2) 100%);
+      color: var(--nav-text);
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 10px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .brand-badge {
+      width: 46px; height: 46px; border-radius: 14px;
+      background: linear-gradient(135deg, #60a5fa, #2563eb);
+      display: grid; place-items: center; font-weight: 800; color: white;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+      flex: 0 0 auto;
+    }
+    .brand h1 { font-size: 18px; margin: 0; }
+    .brand p { font-size: 12px; margin: 4px 0 0; color: var(--nav-muted); line-height: 1.5; }
+    .workspace-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 14px;
+    }
+    .workspace-label {
+      font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--nav-muted);
+      margin-bottom: 6px;
+    }
+    .workspace-title { font-weight: 700; }
+    .workspace-sub { color: var(--nav-muted); font-size: 13px; margin-top: 4px; }
+    .nav-list {
+      display: grid;
+      gap: 8px;
+    }
+    .nav-btn {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--nav-text);
+      text-align: left;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.06); }
+    .nav-btn.active {
+      background: linear-gradient(135deg, rgba(37,99,235,0.26), rgba(96,165,250,0.16));
+      border: 1px solid rgba(96,165,250,0.28);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+    .nav-btn small { color: var(--nav-muted); font-size: 12px; }
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 12px;
+      color: var(--nav-muted);
+      line-height: 1.6;
+      padding: 0 10px;
     }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 12% 10%, rgba(184,117,71,0.07), transparent 20%),
-        radial-gradient(circle at 85% 8%, rgba(111,124,74,0.08), transparent 18%),
-        radial-gradient(circle at 50% 100%, rgba(36,71,52,0.05), transparent 22%);
-      opacity: .9;
+    .content {
+      min-width: 0;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
-
-    a { color: inherit; text-decoration: none; }
-    .container { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; position: relative; z-index: 1; }
-    .card {
-      background: rgba(255,253,248,0.78);
-      border: 1px solid rgba(117, 104, 78, 0.16);
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.62);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(215,223,235,0.9);
+      border-radius: 20px;
       box-shadow: var(--shadow);
-      border-radius: var(--radius);
+      position: sticky;
+      top: 14px;
+      z-index: 10;
     }
-    .paper {
-      background: linear-gradient(180deg, rgba(255,253,248,0.98), rgba(247,242,232,0.98));
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
+    .topbar h2 { margin: 0; font-size: 24px; }
+    .topbar p { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 13px 18px; border-radius: 14px; font-weight: 700; transition: .18s ease;
       border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: .18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
     }
     .btn:hover { transform: translateY(-1px); }
-    .btn.primary { background: var(--forest); color: var(--white); box-shadow: 0 12px 22px rgba(36,71,52,0.15); }
-    .btn.secondary { background: transparent; border-color: rgba(36,71,52,0.18); color: var(--forest); }
-    .btn.ghost { background: rgba(255,255,255,0.45); border-color: var(--line); color: var(--ink); }
+    .btn.primary { background: var(--accent); color: white; box-shadow: 0 10px 26px rgba(37,99,235,0.25); }
+    .btn.secondary { background: white; border-color: var(--line); color: var(--text); }
+    .btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
+    .btn.good { background: rgba(15,157,102,0.1); color: var(--green); border-color: rgba(15,157,102,0.22); }
+    .btn.warn { background: rgba(203,74,74,0.1); color: var(--red); border-color: rgba(203,74,74,0.22); }
 
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--forest);
-      background: rgba(36,71,52,0.08); border: 1px solid rgba(36,71,52,0.12);
-      padding: 8px 10px; border-radius: 999px;
-    }
-    .eyebrow::before {
-      content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--forest);
-    }
+    .page { display: none; gap: 18px; }
+    .page.active { display: grid; }
 
-    header {
-      position: sticky; top: 0; z-index: 20;
-      background: rgba(247,242,232,0.86);
-      border-bottom: 1px solid rgba(117,104,78,0.12);
-      backdrop-filter: blur(10px);
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
     }
-    .nav { display: flex; align-items: center; justify-content: space-between; min-height: 78px; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .seal {
-      width: 42px; height: 42px; border-radius: 12px; background: var(--forest); color: var(--white);
-      display: grid; place-items: center; font-weight: 800; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);
+    .panel.soft { background: rgba(255,255,255,0.72); }
+    .panel h3 { margin: 0; font-size: 20px; }
+    .panel-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
     }
-    .brand-title { font-weight: 800; letter-spacing: -.02em; }
-    .brand-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .nav-links { display: flex; gap: 26px; color: var(--muted); font-size: 14px; }
-    .nav-actions { display: flex; gap: 10px; }
-
-    .hero {
-      display: grid; grid-template-columns: 1.05fr .95fr; gap: 34px; align-items: start;
-      padding: 38px 0 36px;
-    }
-    h1 {
-      margin: 18px 0 0; font-size: clamp(42px, 6vw, 74px); line-height: .95; letter-spacing: -.05em; max-width: 740px;
-    }
-    .lead { margin-top: 22px; color: var(--muted); font-size: 19px; line-height: 1.75; max-width: 700px; }
-    .hero-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 28px; max-width: 680px; }
-    .stat {
-      padding: 16px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,0.5);
-    }
-    .stat strong { display:block; font-size: 28px; }
-    .stat span { display:block; margin-top: 6px; font-size: 13px; color: var(--muted); line-height: 1.55; }
-
-    .hero-stack { display: grid; gap: 16px; }
-    .folder {
-      position: relative; padding: 18px; border-radius: 24px; box-shadow: var(--shadow-lg);
-      background: linear-gradient(180deg, #d9c9ac, #cbb58c);
-      border: 1px solid rgba(101,80,45,0.18);
-    }
-    .folder::before {
-      content: ""; position: absolute; top: -10px; left: 22px; width: 130px; height: 26px;
-      background: linear-gradient(180deg, #deceb1, #cdb78e);
-      border: 1px solid rgba(101,80,45,0.15); border-bottom: none;
-      border-radius: 14px 14px 0 0;
-    }
-    .sheet {
-      background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 16px; position: relative;
-    }
-    .sheet::after {
-      content: "RENEWAL DUE"; position: absolute; right: 14px; top: 18px;
-      border: 2px solid var(--alert); color: var(--alert); font-size: 11px; font-weight: 800;
-      letter-spacing: .12em; padding: 8px 10px; border-radius: 8px; transform: rotate(-8deg);
-      opacity: .78;
-    }
-    .sheet h3 { margin: 0; font-size: 20px; }
-    .rule { height: 1px; background: var(--line); margin: 14px 0; }
-    .row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; font-size: 14px; color: var(--muted); }
-    .row strong { color: var(--ink); font-size: 14px; }
-    .stamp-strip { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-    .stamp {
-      padding: 8px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
-      border: 1px solid rgba(36,71,52,0.14); background: rgba(36,71,52,0.07); color: var(--forest);
-    }
-    .stamp.alert { color: var(--alert); border-color: rgba(161,75,56,0.2); background: rgba(161,75,56,0.08); }
-
-    .notice {
-      display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center; padding: 16px 18px;
-    }
-    .notice strong { display: block; font-size: 15px; }
-    .notice span { color: var(--muted); font-size: 13px; display: block; margin-top: 4px; }
-    .pill { padding: 8px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-    .pill.ok { background: rgba(63,106,74,0.10); color: var(--ok); }
-    .pill.warn { background: rgba(161,75,56,0.10); color: var(--alert); }
-
-    .strip {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 16px; margin: 10px 0 24px;
-      border-top: 1px dashed rgba(117,104,78,0.28); border-bottom: 1px dashed rgba(117,104,78,0.28);
-      color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .12em;
-      text-align: center;
-    }
-
-    section { padding: 20px 0 18px; }
-    .section-head { max-width: 780px; margin-bottom: 20px; }
-    h2 { margin: 10px 0 0; font-size: clamp(30px, 4vw, 54px); line-height: 1.03; letter-spacing: -.04em; }
-    .section-copy { margin-top: 16px; color: var(--muted); font-size: 18px; line-height: 1.8; }
-
-    .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
-    .tile { padding: 20px; }
-    .icon {
-      width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--paper-2);
-      border: 1px solid var(--line); color: var(--forest); font-size: 22px;
-    }
-    .tile h3 { margin: 16px 0 10px; font-size: 22px; }
-    .muted { color: var(--muted); line-height: 1.75; }
-
-    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-    .ledger { padding: 20px; }
-    .ledger-top {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
-    }
-    .ledger-title { font-size: 22px; font-weight: 800; }
-    .tab {
-      padding: 7px 10px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); color: var(--muted);
-      background: rgba(255,255,255,0.6);
-    }
-    .ledger-list { margin-top: 14px; display: grid; gap: 12px; }
-    .ledger-row {
-      display: grid; grid-template-columns: 1.4fr .8fr .7fr auto; gap: 12px; align-items: center;
-      padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.56); border: 1px solid var(--line);
-    }
-    .ledger-row h4 { margin: 0; font-size: 16px; }
-    .sub { margin-top: 5px; font-size: 13px; color: var(--muted); }
-    .small-label { font-size: 12px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .08em; }
-    .risk { font-size: 13px; color: var(--alert); font-weight: 700; }
-    .badge {
-      padding: 8px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap;
-      border: 1px solid var(--line); background: var(--paper-2); color: var(--ink);
-    }
-    .badge.red { color: var(--alert); background: rgba(161,75,56,0.08); border-color: rgba(161,75,56,0.16); }
-    .badge.green { color: var(--ok); background: rgba(63,106,74,0.08); border-color: rgba(63,106,74,0.16); }
-
-    .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 16px; }
-    .metric { padding: 18px; }
-    .metric .label { font-size: 12px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .08em; }
-    .metric .num { margin-top: 8px; font-size: 34px; font-weight: 800; }
-    .metric .meta { margin-top: 6px; font-size: 13px; color: var(--muted); }
-
-    .mini-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 14px; }
-    .mini { padding: 14px; border-radius: 16px; background: rgba(255,255,255,0.56); border: 1px solid var(--line); }
-    .mini .k { font-size: 12px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .08em; }
-    .mini .v { margin-top: 8px; font-size: 18px; font-weight: 800; }
-
-    .stack { display: grid; gap: 12px; }
-    .stack .item { padding: 16px; }
-    .stack .item strong { display: block; margin-bottom: 6px; }
-
-    .quotes { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-    .quote { padding: 22px; position: relative; }
-    .quote::before {
-      content: "“"; position: absolute; top: 12px; right: 18px; font-size: 52px; color: rgba(36,71,52,0.10); font-weight: 900;
-    }
-    .quote p { margin: 0; line-height: 1.9; }
-    .author { margin-top: 16px; font-size: 14px; color: var(--muted); }
-
-    .pricing { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
-    .price-card { padding: 22px; position: relative; overflow: hidden; }
-    .price-card.featured { border: 2px solid var(--forest); background: linear-gradient(180deg, #fffefb, #f3eddf); }
-    .flag {
-      position: absolute; top: 16px; right: -34px; transform: rotate(35deg);
-      background: var(--forest); color: var(--white); padding: 6px 42px; font-size: 11px; font-weight: 800; letter-spacing: .10em;
-    }
-    .price-card h3 { margin: 0; font-size: 22px; }
-    .price { margin-top: 14px; font-size: 50px; font-weight: 900; letter-spacing: -.04em; }
-    .price small { font-size: 18px; color: var(--muted); font-weight: 600; }
-
-    .cta {
-      margin: 20px 0 60px; padding: 28px; border-radius: 26px;
-      background: linear-gradient(135deg, rgba(36,71,52,0.06), rgba(184,117,71,0.06));
-      border: 1px solid rgba(117,104,78,0.16);
+    .subtext { color: var(--muted); line-height: 1.65; font-size: 14px; }
+    .metric-card {
+      padding: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 1px solid var(--line);
+      border-radius: 18px;
       box-shadow: var(--shadow);
     }
-    .cta-wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; align-items: center; }
-    .checklist { display: grid; gap: 10px; }
-    .check { padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.56); border: 1px solid var(--line); color: var(--muted); }
-    .check strong { color: var(--ink); }
+    .metric-label { color: var(--muted); font-size: 13px; }
+    .metric-value { font-size: 34px; font-weight: 800; margin-top: 10px; }
+    .metric-meta { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      white-space: nowrap;
+    }
+    .badge.green { color: var(--green); background: rgba(15,157,102,0.08); border-color: rgba(15,157,102,0.22); }
+    .badge.red { color: var(--red); background: rgba(203,74,74,0.08); border-color: rgba(203,74,74,0.22); }
+    .badge.amber { color: var(--amber); background: rgba(204,138,21,0.1); border-color: rgba(204,138,21,0.2); }
+    .badge.blue { color: var(--accent); background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.18); }
+    .badge.violet { color: var(--violet); background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.18); }
+    .badge.gray { color: var(--muted); }
 
-    footer { padding: 4px 0 30px; font-size: 13px; color: var(--muted); }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: var(--panel-2);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-size: 12px;
+    }
+    tr:last-child td { border-bottom: none; }
+    .entity-title { font-weight: 700; }
+    .entity-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
-    @media (max-width: 1100px) {
-      .hero, .split, .cta-wrap { grid-template-columns: 1fr; }
-      .grid-4, .quotes, .pricing { grid-template-columns: repeat(2,1fr); }
-      .strip { grid-template-columns: repeat(3,1fr); }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
+    }
+    .field { display: grid; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { font-size: 13px; color: var(--muted); font-weight: 600; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      padding: 11px 12px;
+      color: var(--text);
+      outline: none;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .upload-box {
+      border: 2px dashed var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: var(--panel-2);
+      color: var(--muted);
+      text-align: center;
+    }
+    .upload-box strong { color: var(--text); display: block; margin-bottom: 6px; }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .preview-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-2);
+      overflow: hidden;
+    }
+    .preview-card img {
+      display: block;
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      background: #dce5f2;
+    }
+    .preview-card span {
+      display: block;
+      font-size: 12px;
+      padding: 8px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    @media (max-width: 760px) {
-      .container { width: min(var(--max), calc(100% - 24px)); }
-      .nav-links, .nav-actions .secondary { display: none; }
-      .stats, .grid-4, .quotes, .pricing, .metrics, .mini-grid, .strip { grid-template-columns: 1fr; }
-      .ledger-row { grid-template-columns: 1fr; }
-      h1 { font-size: 42px; }
-      .lead, .section-copy { font-size: 16px; }
+    .template-list, .timeline, .quick-list {
+      display: grid;
+      gap: 12px;
+    }
+    .template-item, .timeline-item, .quick-item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-2);
+      padding: 14px;
+    }
+    .template-item strong, .timeline-item strong, .quick-item strong { display: block; }
+    .template-item p, .timeline-item p, .quick-item p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .inline-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 16px;
+    }
+    .bar-chart {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .bar-row { display: grid; gap: 6px; }
+    .bar-row-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 12px;
+    }
+    .bar-track {
+      height: 12px;
+      background: var(--panel-3);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #60a5fa, #2563eb);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: #111c2b;
+      color: white;
+      padding: 14px 16px;
+      border-radius: 14px;
+      box-shadow: 0 18px 46px rgba(0,0,0,0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: .18s ease;
+      z-index: 50;
+      max-width: 360px;
+      font-size: 14px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1180px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .grid-3, .grid-2, .report-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+      .content { padding-top: 0; }
+    }
+    @media (max-width: 720px) {
+      .grid-4, .form-grid { grid-template-columns: 1fr; }
+      .topbar { position: static; }
+      .topbar-actions { width: 100%; }
+      .topbar-actions .btn { flex: 1 1 auto; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container nav">
+  <div class="app">
+    <aside class="sidebar">
       <div class="brand">
-        <div class="seal">P</div>
+        <div class="brand-badge">RC</div>
         <div>
-          <div class="brand-title">PermitPilot</div>
-          <div class="brand-sub">Permit &amp; License Tracking for Physical Businesses</div>
-        </div>
-      </div>
-      <nav class="nav-links">
-        <a href="#why">Why now</a>
-        <a href="#workflow">Workflow</a>
-        <a href="#customers">Customers</a>
-        <a href="#pricing">Pricing</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="btn secondary" href="#pricing">Book demo</a>
-        <a class="btn primary" href="#cta">Start free</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="hero">
-      <div>
-        <div class="eyebrow">Never miss a renewal again</div>
-        <h1>Built for permits, licenses, inspections, and all the deadlines nobody can afford to forget.</h1>
-        <p class="lead">PermitPilot is a modern compliance workspace for restaurants, contractors, childcare centers, salons, and clinics. Instead of managing renewals with sticky notes and spreadsheets, teams get one system for due dates, documents, filings, location records, and risk alerts.</p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#workflow">See the workflow</a>
-          <a class="btn secondary" href="#why">Why this works</a>
-        </div>
-        <div class="stats">
-          <div class="stat"><strong>1 place</strong><span>For permits, licenses, inspections, and renewal records</span></div>
-          <div class="stat"><strong>12 due soon</strong><span>Example deadlines surfaced before they become emergencies</span></div>
-          <div class="stat"><strong>Less risk</strong><span>Missed filings can mean fines, closure, or lost contracts</span></div>
+          <h1>RailCore PMO</h1>
+          <p>Construction delivery platform for complex capital projects and vendor ecosystems.</p>
         </div>
       </div>
 
-      <div class="hero-stack">
-        <div class="folder">
-          <div class="sheet">
-            <h3>Permit renewal packet</h3>
-            <div class="rule"></div>
-            <div class="row"><strong>Business</strong><span>Queen West Kitchen Group</span></div>
-            <div class="row"><strong>Permit type</strong><span>Food service establishment</span></div>
-            <div class="row"><strong>Jurisdiction</strong><span>Toronto Public Health</span></div>
-            <div class="row"><strong>Renewal date</strong><span>April 04, 2026</span></div>
-            <div class="row"><strong>Assigned owner</strong><span>Operations Manager</span></div>
-            <div class="stamp-strip">
-              <div class="stamp">Docs collected</div>
-              <div class="stamp alert">Payment pending</div>
-              <div class="stamp">Inspection history attached</div>
+      <div class="workspace-card">
+        <div class="workspace-label">Program</div>
+        <div class="workspace-title">NorthLink Regional Rail</div>
+        <div class="workspace-sub">48 stations · 116 vendors · commissioning in progress</div>
+      </div>
+
+      <div class="nav-list" id="navList">
+        <button class="nav-btn active" data-page="dashboard">
+          <span>Dashboard &amp; Reporting</span>
+          <small>Overview</small>
+        </button>
+        <button class="nav-btn" data-page="commissioning">
+          <span>Commissioning</span>
+          <small>Tests &amp; signoff</small>
+        </button>
+        <button class="nav-btn" data-page="doccontrol">
+          <span>Document Control</span>
+          <small>Revisions</small>
+        </button>
+        <button class="nav-btn" data-page="defects">
+          <span>Defects</span>
+          <small>Punch list</small>
+        </button>
+        <button class="nav-btn" data-page="assets">
+          <span>Asset Tracking</span>
+          <small>Registers &amp; images</small>
+        </button>
+      </div>
+
+      <div class="workspace-card">
+        <div class="workspace-label">Live health</div>
+        <div class="inline-row">
+          <span>Open defects</span>
+          <span class="badge red" id="navOpenDefects">12</span>
+        </div>
+        <div class="inline-row" style="margin-top:8px;">
+          <span>Pending tests</span>
+          <span class="badge amber" id="navPendingTests">5</span>
+        </div>
+        <div class="inline-row" style="margin-top:8px;">
+          <span>Docs under review</span>
+          <span class="badge blue" id="navDocsReview">9</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        Preview app with working navigation, forms, sample tables, revision history, pass/fail testing, defect logging, asset images, and dashboard reporting.
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div>
+          <h2 id="pageTitle">Dashboard &amp; Reporting</h2>
+          <p id="pageSubtitle">Program-wide reporting across commissioning, vendors, defects, documents, and asset progress.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn secondary" id="sampleDataBtn">Reset sample data</button>
+          <button class="btn primary" id="quickActionBtn">Create sample item</button>
+        </div>
+      </div>
+
+      <section class="page active" id="page-dashboard">
+        <div class="grid-4">
+          <div class="metric-card"><div class="metric-label">Commissioning completion</div><div class="metric-value" id="metricCompletion">82%</div><div class="metric-meta">147 of 179 planned tests completed</div></div>
+          <div class="metric-card"><div class="metric-label">Open defects</div><div class="metric-value" id="metricDefects">12</div><div class="metric-meta">4 critical, 5 medium, 3 low</div></div>
+          <div class="metric-card"><div class="metric-label">Controlled documents</div><div class="metric-value" id="metricDocs">248</div><div class="metric-meta">9 under active revision review</div></div>
+          <div class="metric-card"><div class="metric-label">Tagged assets</div><div class="metric-value" id="metricAssets">1,426</div><div class="metric-meta">86% with latest field image attached</div></div>
+        </div>
+
+        <div class="report-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Readiness by work package</h3>
+                <div class="subtext">This view acts like a reporting dashboard: which packages are advancing, which are blocked, and where management attention is needed.</div>
+              </div>
+              <span class="badge blue">Live sample</span>
+            </div>
+            <div class="bar-chart" id="dashboardChart"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Executive snapshot</h3>
+                <div class="subtext">Auto-updates from the underlying pages as you add sample data.</div>
+              </div>
+            </div>
+            <div class="quick-list" id="dashboardSnapshot"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Recent activity</h3>
+                <div class="subtext">Cross-module events: tests, defects, document revisions, and asset updates.</div>
+              </div>
+            </div>
+            <div class="timeline" id="activityFeed"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Vendor health summary</h3>
+                <div class="subtext">Example supplier coordination view for a large rail or transit delivery program.</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Vendor</th><th>Package</th><th>Status</th><th>Issues</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><div class="entity-title">TrackWorks Civil</div><div class="entity-sub">Foundations &amp; guideway</div></td><td>West Corridor</td><td><span class="badge green">On plan</span></td><td>2 RFIs pending</td></tr>
+                  <tr><td><div class="entity-title">SignalLogic Systems</div><div class="entity-sub">Signalling &amp; integration</div></td><td>Core systems</td><td><span class="badge amber">Watch</span></td><td>Factory test slippage</td></tr>
+                  <tr><td><div class="entity-title">Metro Power EPC</div><div class="entity-sub">Traction power</div></td><td>Stations South</td><td><span class="badge red">Blocked</span></td><td>4 defects impacting energization</td></tr>
+                  <tr><td><div class="entity-title">Civitas Station Build</div><div class="entity-sub">Architectural fit-out</div></td><td>Stations North</td><td><span class="badge green">On plan</span></td><td>Revision package submitted</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-commissioning">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Create commissioning record</h3>
+                <div class="subtext">Supports pass/fail outcomes, project-agreement templates, vendor ownership, and photo attachments.</div>
+              </div>
+            </div>
+            <form id="commissioningForm" class="form-grid">
+              <div class="field">
+                <label for="commTemplate">Agreement template</label>
+                <select id="commTemplate">
+                  <option>Integrated Systems Test</option>
+                  <option>Station Handover Checklist</option>
+                  <option>Power Energization Readiness</option>
+                  <option>Track Section Walkdown</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="commPackage">Work package</label>
+                <input id="commPackage" value="Station Package A" />
+              </div>
+              <div class="field">
+                <label for="commVendor">Vendor</label>
+                <input id="commVendor" value="SignalLogic Systems" />
+              </div>
+              <div class="field">
+                <label for="commStatus">Outcome</label>
+                <select id="commStatus">
+                  <option value="Pass">Pass</option>
+                  <option value="Fail">Fail</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="commNotes">Notes / observations</label>
+                <textarea id="commNotes">Automatic test run complete. Awaiting two as-built confirmations from vendor and field photo verification.</textarea>
+              </div>
+              <div class="field full">
+                <label for="commPhotos">Attach photos</label>
+                <div class="upload-box">
+                  <strong>Upload commissioning photos</strong>
+                  PNG, JPG, or WebP files for evidence and signoff support.
+                  <div style="margin-top:12px;"><input id="commPhotos" type="file" accept="image/*" multiple /></div>
+                </div>
+                <div class="preview-grid" id="commPreview"></div>
+              </div>
+              <div class="field full" style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn primary" type="submit">Add commissioning record</button>
+                <button class="btn secondary" type="button" id="commLoadTemplate">Load template guidance</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel soft">
+            <div class="panel-head">
+              <div>
+                <h3>Template guidance</h3>
+                <div class="subtext">Example clauses and expectations drawn from project agreements and handover obligations.</div>
+              </div>
+            </div>
+            <div class="template-list" id="templateGuidance">
+              <div class="template-item"><strong>Integrated Systems Test</strong><p>Requires vendor witness, test script reference, interface confirmation, and captured evidence before final signoff.</p></div>
+              <div class="template-item"><strong>Station Handover Checklist</strong><p>Confirms civil completion, safety walkdown, training record, asset tags, and operations acceptance package.</p></div>
+              <div class="template-item"><strong>Power Energization Readiness</strong><p>Confirms isolation plan, defect closure threshold, revision-controlled drawings, and safety permit status.</p></div>
             </div>
           </div>
         </div>
 
-        <div class="paper notice">
-          <div>
-            <strong>Fire inspection certificate approaching deadline</strong>
-            <span>PermitPilot flags this early because processing time is trending longer than usual in this jurisdiction.</span>
-          </div>
-          <div class="pill warn">9 days left</div>
-        </div>
-
-        <div class="paper notice">
-          <div>
-            <strong>Childcare operating approval ready for submission</strong>
-            <span>All required documents are present. Renewal packet looks complete.</span>
-          </div>
-          <div class="pill ok">Ready</div>
-        </div>
-      </div>
-    </section>
-
-    <div class="strip">
-      <div>Restaurants</div>
-      <div>Contractors</div>
-      <div>Childcare</div>
-      <div>Salons</div>
-      <div>Clinics</div>
-    </div>
-
-    <section id="why">
-      <div class="section-head">
-        <div class="eyebrow">Why this startup idea works</div>
-        <h2>It feels less like generic SaaS and more like critical business infrastructure.</h2>
-        <div class="section-copy">Permit and license renewals are recurring, high-stakes, easy to understand, and still handled with outdated tools. That combination makes the problem sticky, monetizable, and underserved.</div>
-      </div>
-      <div class="grid-4">
-        <div class="paper tile">
-          <div class="icon">⚠</div>
-          <h3>Urgent pain</h3>
-          <div class="muted">A missed license can trigger fines, shutdowns, delayed openings, or lost contracts. Customers already understand the ROI.</div>
-        </div>
-        <div class="paper tile">
-          <div class="icon">↻</div>
-          <h3>Recurring forever</h3>
-          <div class="muted">Permits and licenses keep renewing. Once the product becomes the record system, retention becomes naturally strong.</div>
-        </div>
-        <div class="paper tile">
-          <div class="icon">◎</div>
-          <h3>Reachable buyers</h3>
-          <div class="muted">Contractor groups, franchise communities, restaurant operators, and local business associations offer clear customer channels.</div>
-        </div>
-        <div class="paper tile">
-          <div class="icon">✦</div>
-          <h3>AI fits naturally</h3>
-          <div class="muted">Auto-fill forms, predict processing times, catch missing documents, and alert teams when filing windows are at risk.</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="workflow">
-      <div class="split">
-        <div class="paper ledger">
-          <div class="ledger-top">
+        <div class="panel">
+          <div class="panel-head">
             <div>
-              <div class="small-label">Renewal ledger</div>
-              <div class="ledger-title">Live record of every compliance item</div>
+              <h3>Commissioning register</h3>
+              <div class="subtext">Interactive sample table. New records appear here immediately and change dashboard metrics.</div>
             </div>
-            <div class="tab">4 jurisdictions</div>
           </div>
-          <div class="ledger-list">
-            <div class="ledger-row">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Test / template</th><th>Package</th><th>Vendor</th><th>Outcome</th><th>Photos</th></tr>
+              </thead>
+              <tbody id="commissioningTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-doccontrol">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
               <div>
-                <h4>Food service establishment permit</h4>
-                <div class="sub">Toronto · Queen West location</div>
+                <h3>Add document revision</h3>
+                <div class="subtext">Control revisions, transmittals, reviewers, and status for project-critical documents.</div>
               </div>
-              <div>
-                <div class="small-label">Due</div>
-                <div>Apr 04</div>
-              </div>
-              <div>
-                <div class="small-label">Risk</div>
-                <div class="risk">High</div>
-              </div>
-              <div class="badge red">Needs filing</div>
             </div>
-            <div class="ledger-row">
-              <div>
-                <h4>Electrical contractor license</h4>
-                <div class="sub">Ontario · Commercial division</div>
+            <form id="docForm" class="form-grid">
+              <div class="field">
+                <label for="docNumber">Document number</label>
+                <input id="docNumber" value="SIG-IFC-4102" />
               </div>
-              <div>
-                <div class="small-label">Due</div>
-                <div>Apr 12</div>
+              <div class="field">
+                <label for="docRevision">Revision</label>
+                <input id="docRevision" value="C03" />
               </div>
-              <div>
-                <div class="small-label">Risk</div>
-                <div class="risk">Medium</div>
+              <div class="field">
+                <label for="docTitle">Title</label>
+                <input id="docTitle" value="Interlocking Interface Schematic" />
               </div>
-              <div class="badge">Docs missing</div>
+              <div class="field">
+                <label for="docStatus">Status</label>
+                <select id="docStatus">
+                  <option>Under Review</option>
+                  <option>Approved</option>
+                  <option>Issued for Construction</option>
+                  <option>Superseded</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="docOwner">Owner</label>
+                <input id="docOwner" value="Document Control Lead" />
+              </div>
+              <div class="field">
+                <label for="docDate">Issue date</label>
+                <input id="docDate" type="date" value="2026-03-10" />
+              </div>
+              <div class="field full">
+                <label for="docNotes">Transmittal notes</label>
+                <textarea id="docNotes">Updated revision to align signalling interface with latest traction power coordination comments.</textarea>
+              </div>
+              <div class="field full">
+                <button class="btn primary" type="submit">Add revision</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel soft">
+            <div class="panel-head">
+              <div>
+                <h3>Revision control workflow</h3>
+                <div class="subtext">Example of a process-oriented side panel a real doc control workspace would have.</div>
+              </div>
             </div>
-            <div class="ledger-row">
-              <div>
-                <h4>Childcare operating approval</h4>
-                <div class="sub">York Region · Site B</div>
-              </div>
-              <div>
-                <div class="small-label">Due</div>
-                <div>May 02</div>
-              </div>
-              <div>
-                <div class="small-label">Risk</div>
-                <div>Watch timing</div>
-              </div>
-              <div class="badge green">Ready</div>
-            </div>
-            <div class="ledger-row">
-              <div>
-                <h4>Clinic waste disposal permit</h4>
-                <div class="sub">Peel Region · Medical office</div>
-              </div>
-              <div>
-                <div class="small-label">Due</div>
-                <div>May 15</div>
-              </div>
-              <div>
-                <div class="small-label">Risk</div>
-                <div>Low</div>
-              </div>
-              <div class="badge green">On track</div>
+            <div class="quick-list">
+              <div class="quick-item"><strong>1. Issue revision</strong><p>Register a new revision with date, owner, title, and package reference.</p></div>
+              <div class="quick-item"><strong>2. Route for review</strong><p>Track which reviewers still owe comments and whether the issue is open or approved.</p></div>
+              <div class="quick-item"><strong>3. Maintain history</strong><p>Each superseded revision remains visible for audit traceability.</p></div>
             </div>
           </div>
         </div>
 
-        <div>
-          <div class="section-head" style="margin-bottom:14px;">
-            <div class="eyebrow">The actual workflow</div>
-            <h2>Less dashboard theater. More records, deadlines, documents, and ownership.</h2>
-            <div class="section-copy">This direction is intentionally styled around the topic itself: folders, packets, ledgers, approvals, stamps, and municipal paperwork. It should feel like a premium compliance product, not a crypto or AI analytics page with the copy swapped out.</div>
-          </div>
-          <div class="stack">
-            <div class="paper item"><strong>Track each license by location</strong>See what exists, what expires, who owns it, and what documents are attached.</div>
-            <div class="paper item"><strong>Prepare renewal packets</strong>Group forms, fees, IDs, inspection records, and supporting files in one place.</div>
-            <div class="paper item"><strong>Spot risk earlier</strong>Flag items that are incomplete, delayed, or exposed to slow municipal processing windows.</div>
-            <div class="paper item"><strong>Use AI where it actually matters</strong>Pre-fill forms, summarize requirements, and detect missing documents before a submission fails.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="paper" style="padding:20px;">
-        <div class="section-head" style="max-width:none;margin-bottom:0;">
-          <div class="eyebrow">What owners would actually care about</div>
-          <h2 style="font-size:38px;">What is due, what is missing, what is risky, and who is handling it.</h2>
-        </div>
-        <div class="metrics">
-          <div class="paper metric">
-            <div class="label">Items tracked</div>
-            <div class="num">1,248</div>
-            <div class="meta">Across permit types and business locations</div>
-          </div>
-          <div class="paper metric">
-            <div class="label">Critical deadlines</div>
-            <div class="num">12</div>
-            <div class="meta">Due in the next 14 days</div>
-          </div>
-          <div class="paper metric">
-            <div class="label">Potential exposure</div>
-            <div class="num">$62k</div>
-            <div class="meta">Estimated fines and disruption risk reduced</div>
-          </div>
-        </div>
-        <div class="mini-grid">
-          <div class="mini"><div class="k">Restaurants</div><div class="v">Compliant</div></div>
-          <div class="mini"><div class="k">Contractors</div><div class="v">Monitored</div></div>
-          <div class="mini"><div class="k">Childcare</div><div class="v">Tracked</div></div>
-          <div class="mini"><div class="k">Clinics</div><div class="v">Covered</div></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="customers">
-      <div class="section-head">
-        <div class="eyebrow">Who needs this</div>
-        <h2>Strongest for operators with locations, inspections, and a lot to lose from missed renewals.</h2>
-      </div>
-      <div class="quotes">
-        <div class="paper quote">
-          <p>We used to manage renewals with spreadsheets and calendar reminders. One clean system for all our licenses would have removed constant fire drills.</p>
-          <div class="author">Olivia Grant · Multi-unit restaurant operator</div>
-        </div>
-        <div class="paper quote">
-          <p>For contractors, childcare, and healthcare, compliance dates are as operationally important as payroll. Missing one can stop work cold.</p>
-          <div class="author">Marcus Hill · Commercial contractor</div>
-        </div>
-        <div class="paper quote">
-          <p>Nobody built the modern version of this yet. Most owners are still juggling email folders, sticky notes, paper packets, and luck.</p>
-          <div class="author">Dana Flores · Small business advisor</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="pricing">
-      <div class="section-head" style="text-align:center; max-width:780px; margin-inline:auto;">
-        <div class="eyebrow">Simple pricing</div>
-        <h2>Price it by location, then expand into filings, workflows, and managed compliance.</h2>
-        <div class="section-copy">This makes the offer easy to understand for owners while leaving room for higher-value upsells once the product becomes part of operations.</div>
-      </div>
-      <div class="pricing">
-        <div class="paper price-card">
-          <h3>Starter</h3>
-          <div class="price">$29<small>/location</small></div>
-          <div class="muted">For single-location businesses that need clean tracking for core permits and licenses.</div>
-          <div class="hero-actions"><a class="btn ghost" href="#cta" style="width:100%;">Start trial</a></div>
-        </div>
-        <div class="paper price-card featured">
-          <div class="flag">Most popular</div>
-          <h3>Growth</h3>
-          <div class="price">$79<small>/location</small></div>
-          <div class="muted">For multi-location operators who need reminders, document packets, dashboards, and AI-assisted filing prep.</div>
-          <div class="hero-actions"><a class="btn primary" href="#cta" style="width:100%;">Choose Growth</a></div>
-        </div>
-        <div class="paper price-card">
-          <h3>Enterprise</h3>
-          <div class="price">Custom</div>
-          <div class="muted">For franchises, healthcare groups, and larger operators with complex compliance requirements and internal teams.</div>
-          <div class="hero-actions"><a class="btn ghost" href="#cta" style="width:100%;">Talk to sales</a></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="cta">
-      <div class="cta">
-        <div class="cta-wrap">
-          <div>
-            <div class="eyebrow">A more topic-native direction</div>
-            <h2 style="font-size:44px;">This now looks like a product for permits and renewals, not a recycled AI landing page.</h2>
-            <div class="section-copy">The new direction uses a paper-and-ledger visual language, warmer operational colors, compliance-oriented UI patterns, and more grounded product framing. It should feel much closer to the real buying context.</div>
-            <div class="hero-actions">
-              <a class="btn primary" href="#">Start tracking renewals</a>
-              <a class="btn secondary" href="#workflow">See the workflow</a>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Document register</h3>
+              <div class="subtext">Revision-controlled register with sample records and live add functionality.</div>
             </div>
           </div>
-          <div class="checklist">
-            <div class="check"><strong>More on-theme visual system</strong><br>Folders, records, approval states, packets, and deadline notices.</div>
-            <div class="check"><strong>Better industry fit</strong><br>Feels closer to municipal paperwork, inspections, and compliance operations.</div>
-            <div class="check"><strong>Still modern</strong><br>Clean spacing, polished cards, strong hierarchy, but not generic startup neon.</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Document</th><th>Revision</th><th>Status</th><th>Owner</th><th>Date</th></tr>
+              </thead>
+              <tbody id="docTableBody"></tbody>
+            </table>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <footer>
-      PermitPilot concept page · Self-contained HTML for reliable static hosting and a more topic-native design language.
-    </footer>
-  </main>
+      <section class="page" id="page-defects">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Log defect</h3>
+                <div class="subtext">Track punch list items, severity, responsible vendor, and remediation status.</div>
+              </div>
+            </div>
+            <form id="defectForm" class="form-grid">
+              <div class="field">
+                <label for="defectTitle">Defect title</label>
+                <input id="defectTitle" value="Cable tray support misalignment" />
+              </div>
+              <div class="field">
+                <label for="defectArea">Area / location</label>
+                <input id="defectArea" value="Station A · Concourse East" />
+              </div>
+              <div class="field">
+                <label for="defectVendor">Responsible vendor</label>
+                <input id="defectVendor" value="Metro Power EPC" />
+              </div>
+              <div class="field">
+                <label for="defectSeverity">Severity</label>
+                <select id="defectSeverity">
+                  <option>Critical</option>
+                  <option selected>Medium</option>
+                  <option>Low</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="defectNotes">Description</label>
+                <textarea id="defectNotes">Observed during site walkdown. Alignment issue impacts planned conduit routing and requires vendor rectification.</textarea>
+              </div>
+              <div class="field full">
+                <button class="btn primary" type="submit">Add defect</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel soft">
+            <div class="panel-head">
+              <div>
+                <h3>Defect status summary</h3>
+                <div class="subtext">Quick operational view for package managers and field leads.</div>
+              </div>
+            </div>
+            <div class="quick-list" id="defectSummary"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Defect register</h3>
+              <div class="subtext">Searchless preview register showing severity and ownership clearly.</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Defect</th><th>Location</th><th>Vendor</th><th>Severity</th><th>Status</th></tr>
+              </thead>
+              <tbody id="defectTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-assets">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Add asset</h3>
+                <div class="subtext">Track tagged assets, installation state, location, and field imagery.</div>
+              </div>
+            </div>
+            <form id="assetForm" class="form-grid">
+              <div class="field">
+                <label for="assetTag">Asset tag</label>
+                <input id="assetTag" value="RL-STN-A-HVAC-204" />
+              </div>
+              <div class="field">
+                <label for="assetType">Asset type</label>
+                <input id="assetType" value="Air Handling Unit" />
+              </div>
+              <div class="field">
+                <label for="assetLocation">Location</label>
+                <input id="assetLocation" value="Station A · Plant room" />
+              </div>
+              <div class="field">
+                <label for="assetStatus">Status</label>
+                <select id="assetStatus">
+                  <option>Installed</option>
+                  <option>Delivered</option>
+                  <option>Commissioned</option>
+                  <option>Tagged for inspection</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="assetImage">Attach asset image</label>
+                <div class="upload-box">
+                  <strong>Upload field image</strong>
+                  Supports single image preview for the asset register.
+                  <div style="margin-top:12px;"><input id="assetImage" type="file" accept="image/*" /></div>
+                </div>
+                <div class="preview-grid" id="assetPreview"></div>
+              </div>
+              <div class="field full">
+                <button class="btn primary" type="submit">Add asset</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel soft">
+            <div class="panel-head">
+              <div>
+                <h3>Asset image gallery</h3>
+                <div class="subtext">Shows uploaded images plus any assets already carrying an image in the sample dataset.</div>
+              </div>
+            </div>
+            <div class="preview-grid" id="assetGallery"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Asset register</h3>
+              <div class="subtext">Operational register for tracking installation and handover readiness.</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Asset</th><th>Type</th><th>Location</th><th>Status</th><th>Image</th></tr>
+              </thead>
+              <tbody id="assetTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const sampleSvg = (label, tone) => `data:image/svg+xml;utf8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="400" height="260" viewBox="0 0 400 260">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1">
+            <stop offset="0%" stop-color="${tone[0]}"/>
+            <stop offset="100%" stop-color="${tone[1]}"/>
+          </linearGradient>
+        </defs>
+        <rect width="400" height="260" rx="20" fill="url(#g)"/>
+        <rect x="26" y="26" width="348" height="208" rx="16" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.24)"/>
+        <circle cx="78" cy="82" r="26" fill="rgba(255,255,255,0.22)"/>
+        <rect x="120" y="66" width="170" height="18" rx="9" fill="rgba(255,255,255,0.22)"/>
+        <rect x="120" y="96" width="120" height="12" rx="6" fill="rgba(255,255,255,0.18)"/>
+        <rect x="52" y="150" width="296" height="18" rx="9" fill="rgba(255,255,255,0.18)"/>
+        <rect x="52" y="182" width="198" height="18" rx="9" fill="rgba(255,255,255,0.12)"/>
+        <text x="52" y="228" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="white">${label}</text>
+      </svg>
+    `)}`;
+
+    const initialState = () => ({
+      commissioning: [
+        { template: 'Integrated Systems Test', package: 'Core Signalling', vendor: 'SignalLogic Systems', outcome: 'Pass', notes: 'Interface script completed with witness signoff.', photoCount: 2 },
+        { template: 'Power Energization Readiness', package: 'Stations South', vendor: 'Metro Power EPC', outcome: 'Fail', notes: 'Defect backlog above threshold for energization permit.', photoCount: 1 },
+        { template: 'Station Handover Checklist', package: 'Station Package B', vendor: 'Civitas Station Build', outcome: 'Pass', notes: 'Operations training and asset tagging complete.', photoCount: 0 }
+      ],
+      docs: [
+        { number: 'CIV-IFC-1022', revision: 'B04', title: 'Guideway General Arrangement', status: 'Issued for Construction', owner: 'Design Manager', date: '2026-02-18' },
+        { number: 'SIG-SUB-4101', revision: 'C02', title: 'Wayside Signalling Layout', status: 'Under Review', owner: 'Document Control Lead', date: '2026-03-02' },
+        { number: 'STN-HDO-9007', revision: 'A01', title: 'Station Operations Handover Pack', status: 'Approved', owner: 'Handover Coordinator', date: '2026-03-07' }
+      ],
+      defects: [
+        { title: 'Door interface fault at platform screen', area: 'Station C · Platform 2', vendor: 'SignalLogic Systems', severity: 'Critical', status: 'Open' },
+        { title: 'Waterproofing punch list incomplete', area: 'Station A · Roof level', vendor: 'Civitas Station Build', severity: 'Medium', status: 'In Progress' },
+        { title: 'Earthing label missing at switch room', area: 'Depot · Switch room', vendor: 'Metro Power EPC', severity: 'Low', status: 'Open' }
+      ],
+      assets: [
+        { tag: 'RL-SIG-0041', type: 'Signal cabinet', location: 'Station C north approach', status: 'Installed', image: sampleSvg('Signal cabinet', ['#2563eb','#60a5fa']) },
+        { tag: 'RL-TRK-2012', type: 'Point machine', location: 'Junction 4', status: 'Commissioned', image: sampleSvg('Point machine', ['#0f9d66','#6ee7b7']) },
+        { tag: 'RL-STN-B-LFT-002', type: 'Passenger lift controller', location: 'Station B concourse', status: 'Tagged for inspection', image: '' }
+      ],
+      activity: [
+        { title: 'Integrated Systems Test marked Pass', detail: 'Core Signalling · SignalLogic Systems', module: 'Commissioning' },
+        { title: 'Revision C02 issued for review', detail: 'Wayside Signalling Layout', module: 'Document Control' },
+        { title: 'Critical defect remains open', detail: 'Platform screen door interface · Station C', module: 'Defects' },
+        { title: 'Asset image uploaded', detail: 'Point machine · Junction 4', module: 'Assets' }
+      ]
+    });
+
+    let state = initialState();
+    let commUploadFiles = [];
+    let assetUploadFile = null;
+
+    const pageMeta = {
+      dashboard: {
+        title: 'Dashboard & Reporting',
+        subtitle: 'Program-wide reporting across commissioning, vendors, defects, documents, and asset progress.'
+      },
+      commissioning: {
+        title: 'Commissioning',
+        subtitle: 'Manage pass/fail testing, agreement templates, signoff evidence, and photo attachments.'
+      },
+      doccontrol: {
+        title: 'Document Control',
+        subtitle: 'Track revision-controlled documents, reviewers, issue history, and current status.'
+      },
+      defects: {
+        title: 'Defects',
+        subtitle: 'Log punch list items, assign ownership, and monitor remediation across vendors.'
+      },
+      assets: {
+        title: 'Asset Tracking',
+        subtitle: 'Track field assets, locations, imagery, and installation or commissioning state.'
+      }
+    };
+
+    const navButtons = [...document.querySelectorAll('.nav-btn')];
+    const pages = [...document.querySelectorAll('.page')];
+    const toast = document.getElementById('toast');
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function setPage(page) {
+      navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.page === page));
+      pages.forEach(section => section.classList.toggle('active', section.id === `page-${page}`));
+      document.getElementById('pageTitle').textContent = pageMeta[page].title;
+      document.getElementById('pageSubtitle').textContent = pageMeta[page].subtitle;
+    }
+
+    navButtons.forEach(btn => btn.addEventListener('click', () => setPage(btn.dataset.page)));
+
+    function badgeClassForOutcome(outcome) {
+      if (outcome === 'Pass' || outcome === 'Approved' || outcome === 'Commissioned' || outcome === 'Installed') return 'green';
+      if (outcome === 'Fail' || outcome === 'Critical' || outcome === 'Open' || outcome === 'Blocked') return 'red';
+      if (outcome === 'Under Review' || outcome === 'Medium' || outcome === 'In Progress' || outcome === 'Tagged for inspection') return 'amber';
+      if (outcome === 'Issued for Construction') return 'blue';
+      return 'gray';
+    }
+
+    function renderCommissioning() {
+      const tbody = document.getElementById('commissioningTableBody');
+      tbody.innerHTML = state.commissioning.map(item => `
+        <tr>
+          <td><div class="entity-title">${item.template}</div><div class="entity-sub">${item.notes}</div></td>
+          <td>${item.package}</td>
+          <td>${item.vendor}</td>
+          <td><span class="badge ${badgeClassForOutcome(item.outcome)}">${item.outcome}</span></td>
+          <td>${item.photoCount || 0}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDocs() {
+      const tbody = document.getElementById('docTableBody');
+      tbody.innerHTML = state.docs.map(doc => `
+        <tr>
+          <td><div class="entity-title">${doc.number}</div><div class="entity-sub">${doc.title}</div></td>
+          <td>${doc.revision}</td>
+          <td><span class="badge ${badgeClassForOutcome(doc.status)}">${doc.status}</span></td>
+          <td>${doc.owner}</td>
+          <td>${doc.date}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDefects() {
+      const tbody = document.getElementById('defectTableBody');
+      tbody.innerHTML = state.defects.map(defect => `
+        <tr>
+          <td><div class="entity-title">${defect.title}</div><div class="entity-sub">${defect.status}</div></td>
+          <td>${defect.area}</td>
+          <td>${defect.vendor}</td>
+          <td><span class="badge ${badgeClassForOutcome(defect.severity)}">${defect.severity}</span></td>
+          <td><span class="badge ${badgeClassForOutcome(defect.status)}">${defect.status}</span></td>
+        </tr>
+      `).join('');
+
+      const critical = state.defects.filter(d => d.severity === 'Critical').length;
+      const medium = state.defects.filter(d => d.severity === 'Medium').length;
+      const low = state.defects.filter(d => d.severity === 'Low').length;
+      document.getElementById('defectSummary').innerHTML = `
+        <div class="quick-item"><strong>${state.defects.length} total defects</strong><p>Live count from the defect register.</p></div>
+        <div class="quick-item"><strong>${critical} critical items</strong><p>Critical defects often block testing, handover, or energization activities.</p></div>
+        <div class="quick-item"><strong>${medium} medium / ${low} low</strong><p>Operational punch list remains visible until full closure.</p></div>
+      `;
+    }
+
+    function renderAssets() {
+      const tbody = document.getElementById('assetTableBody');
+      tbody.innerHTML = state.assets.map(asset => `
+        <tr>
+          <td><div class="entity-title">${asset.tag}</div><div class="entity-sub">${asset.type}</div></td>
+          <td>${asset.type}</td>
+          <td>${asset.location}</td>
+          <td><span class="badge ${badgeClassForOutcome(asset.status)}">${asset.status}</span></td>
+          <td>${asset.image ? '<span class="badge blue">Image attached</span>' : '<span class="badge gray">No image</span>'}</td>
+        </tr>
+      `).join('');
+
+      const gallery = document.getElementById('assetGallery');
+      const assetsWithImages = state.assets.filter(asset => asset.image);
+      gallery.innerHTML = assetsWithImages.length ? assetsWithImages.map(asset => `
+        <div class="preview-card">
+          <img src="${asset.image}" alt="${asset.tag}" />
+          <span>${asset.tag}</span>
+        </div>
+      `).join('') : '<div class="subtext">No asset images yet.</div>';
+    }
+
+    function renderDashboard() {
+      const totalTests = state.commissioning.length;
+      const passedTests = state.commissioning.filter(t => t.outcome === 'Pass').length;
+      const completion = totalTests ? Math.round((passedTests / totalTests) * 100) : 0;
+      const docsUnderReview = state.docs.filter(d => d.status === 'Under Review').length;
+      const openDefects = state.defects.filter(d => d.status !== 'Closed').length;
+      const assetsWithImages = state.assets.filter(a => a.image).length;
+      const assetCoverage = state.assets.length ? Math.round((assetsWithImages / state.assets.length) * 100) : 0;
+
+      document.getElementById('metricCompletion').textContent = `${completion}%`;
+      document.getElementById('metricDefects').textContent = openDefects;
+      document.getElementById('metricDocs').textContent = state.docs.length;
+      document.getElementById('metricAssets').textContent = state.assets.length;
+      document.getElementById('navOpenDefects').textContent = openDefects;
+      document.getElementById('navPendingTests').textContent = state.commissioning.filter(t => t.outcome === 'Fail').length;
+      document.getElementById('navDocsReview').textContent = docsUnderReview;
+
+      const chartRows = [
+        { label: 'Civil & Guideway', value: 88 },
+        { label: 'Stations & Fit-out', value: 76 },
+        { label: 'Traction Power', value: 69 },
+        { label: 'Signalling Integration', value: 81 },
+        { label: 'Operational Readiness', value: 63 }
+      ];
+      document.getElementById('dashboardChart').innerHTML = chartRows.map(row => `
+        <div class="bar-row">
+          <div class="bar-row-head"><span>${row.label}</span><span>${row.value}%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${row.value}%"></div></div>
+        </div>
+      `).join('');
+
+      document.getElementById('dashboardSnapshot').innerHTML = `
+        <div class="quick-item"><strong>${passedTests} commissioning records passed</strong><p>${totalTests - passedTests} records currently failed and likely need remediation before signoff.</p></div>
+        <div class="quick-item"><strong>${docsUnderReview} documents under review</strong><p>Revision-controlled content is still moving across vendor and PMO teams.</p></div>
+        <div class="quick-item"><strong>${assetCoverage}% asset image coverage</strong><p>Images help field verification and support handover packages.</p></div>
+        <div class="quick-item"><strong>${openDefects} active defects</strong><p>Defects page remains the source of truth for punch-list risk.</p></div>
+      `;
+
+      document.getElementById('activityFeed').innerHTML = state.activity.slice(0, 8).map(item => `
+        <div class="timeline-item"><strong>${item.title}</strong><p>${item.detail} · ${item.module}</p></div>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderCommissioning();
+      renderDocs();
+      renderDefects();
+      renderAssets();
+      renderDashboard();
+    }
+
+    function addActivity(title, detail, module) {
+      state.activity.unshift({ title, detail, module });
+      state.activity = state.activity.slice(0, 12);
+    }
+
+    function renderFilePreview(files, targetId) {
+      const target = document.getElementById(targetId);
+      if (!files.length) {
+        target.innerHTML = '';
+        return;
+      }
+      target.innerHTML = files.map(file => `
+        <div class="preview-card">
+          <img src="${file.dataUrl}" alt="${file.name}" />
+          <span>${file.name}</span>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('commPhotos').addEventListener('change', async (e) => {
+      const files = [...e.target.files];
+      commUploadFiles = await Promise.all(files.map(file => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+        reader.readAsDataURL(file);
+      })));
+      renderFilePreview(commUploadFiles, 'commPreview');
+    });
+
+    document.getElementById('assetImage').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        assetUploadFile = null;
+        renderFilePreview([], 'assetPreview');
+        return;
+      }
+      assetUploadFile = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ name: file.name, dataUrl: reader.result });
+        reader.readAsDataURL(file);
+      });
+      renderFilePreview([assetUploadFile], 'assetPreview');
+    });
+
+    document.getElementById('commLoadTemplate').addEventListener('click', () => {
+      const template = document.getElementById('commTemplate').value;
+      const guidanceMap = {
+        'Integrated Systems Test': 'Requires test script reference, interface matrix check, witness signoff, and evidence capture across affected systems.',
+        'Station Handover Checklist': 'Requires cleaning closeout, asset tagging completion, operator training record, and defect threshold approval.',
+        'Power Energization Readiness': 'Requires isolation permit, drawing revision validation, defect review, and safety authorization before energization.',
+        'Track Section Walkdown': 'Requires survey confirmation, field photos, issue logging, and area manager signoff.'
+      };
+      document.getElementById('templateGuidance').innerHTML = `
+        <div class="template-item"><strong>${template}</strong><p>${guidanceMap[template]}</p></div>
+      `;
+      showToast(`Loaded template guidance for ${template}.`);
+    });
+
+    document.getElementById('commissioningForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const item = {
+        template: document.getElementById('commTemplate').value,
+        package: document.getElementById('commPackage').value.trim(),
+        vendor: document.getElementById('commVendor').value.trim(),
+        outcome: document.getElementById('commStatus').value,
+        notes: document.getElementById('commNotes').value.trim(),
+        photoCount: commUploadFiles.length
+      };
+      state.commissioning.unshift(item);
+      addActivity(`Commissioning record ${item.outcome}`, `${item.template} · ${item.package}`, 'Commissioning');
+      renderAll();
+      showToast('Commissioning record added.');
+      document.getElementById('commissioningForm').reset();
+      document.getElementById('commTemplate').value = 'Integrated Systems Test';
+      commUploadFiles = [];
+      renderFilePreview([], 'commPreview');
+    });
+
+    document.getElementById('docForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const doc = {
+        number: document.getElementById('docNumber').value.trim(),
+        revision: document.getElementById('docRevision').value.trim(),
+        title: document.getElementById('docTitle').value.trim(),
+        status: document.getElementById('docStatus').value,
+        owner: document.getElementById('docOwner').value.trim(),
+        date: document.getElementById('docDate').value
+      };
+      state.docs.unshift(doc);
+      addActivity(`Document revision ${doc.revision} added`, `${doc.number} · ${doc.status}`, 'Document Control');
+      renderAll();
+      showToast('Document revision added.');
+      document.getElementById('docForm').reset();
+      document.getElementById('docDate').value = '2026-03-10';
+    });
+
+    document.getElementById('defectForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const defect = {
+        title: document.getElementById('defectTitle').value.trim(),
+        area: document.getElementById('defectArea').value.trim(),
+        vendor: document.getElementById('defectVendor').value.trim(),
+        severity: document.getElementById('defectSeverity').value,
+        status: 'Open'
+      };
+      state.defects.unshift(defect);
+      addActivity('Defect logged', `${defect.title} · ${defect.area}`, 'Defects');
+      renderAll();
+      showToast('Defect added to register.');
+      document.getElementById('defectForm').reset();
+    });
+
+    document.getElementById('assetForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const asset = {
+        tag: document.getElementById('assetTag').value.trim(),
+        type: document.getElementById('assetType').value.trim(),
+        location: document.getElementById('assetLocation').value.trim(),
+        status: document.getElementById('assetStatus').value,
+        image: assetUploadFile ? assetUploadFile.dataUrl : ''
+      };
+      state.assets.unshift(asset);
+      addActivity('Asset registered', `${asset.tag} · ${asset.location}`, 'Assets');
+      renderAll();
+      showToast('Asset added to register.');
+      document.getElementById('assetForm').reset();
+      assetUploadFile = null;
+      renderFilePreview([], 'assetPreview');
+    });
+
+    document.getElementById('sampleDataBtn').addEventListener('click', () => {
+      state = initialState();
+      commUploadFiles = [];
+      assetUploadFile = null;
+      renderFilePreview([], 'commPreview');
+      renderFilePreview([], 'assetPreview');
+      renderAll();
+      showToast('Sample data reset.');
+    });
+
+    document.getElementById('quickActionBtn').addEventListener('click', () => {
+      const page = document.querySelector('.nav-btn.active').dataset.page;
+      if (page === 'commissioning') {
+        state.commissioning.unshift({ template: 'Track Section Walkdown', package: 'North Approach', vendor: 'TrackWorks Civil', outcome: 'Pass', notes: 'Walkdown closed with photographic evidence.', photoCount: 3 });
+        addActivity('Commissioning record Pass', 'Track Section Walkdown · North Approach', 'Commissioning');
+        showToast('Sample commissioning item created.');
+      } else if (page === 'doccontrol') {
+        state.docs.unshift({ number: 'CIV-RFI-2203', revision: 'A02', title: 'Retaining Wall Coordination Memo', status: 'Under Review', owner: 'Area Design Lead', date: '2026-03-10' });
+        addActivity('Document revision A02 added', 'CIV-RFI-2203 · Under Review', 'Document Control');
+        showToast('Sample document revision created.');
+      } else if (page === 'defects') {
+        state.defects.unshift({ title: 'Expansion joint finish incomplete', area: 'Station D · Concourse level', vendor: 'Civitas Station Build', severity: 'Medium', status: 'Open' });
+        addActivity('Defect logged', 'Expansion joint finish incomplete · Station D', 'Defects');
+        showToast('Sample defect created.');
+      } else if (page === 'assets') {
+        state.assets.unshift({ tag: 'RL-CCTV-303', type: 'CCTV camera', location: 'Station D platform', status: 'Installed', image: sampleSvg('CCTV camera', ['#7c3aed','#a78bfa']) });
+        addActivity('Asset registered', 'RL-CCTV-303 · Station D platform', 'Assets');
+        showToast('Sample asset created.');
+      } else {
+        state.activity.unshift({ title: 'Executive dashboard note created', detail: 'Program review snapshot generated', module: 'Dashboard' });
+        showToast('Sample dashboard event created.');
+      }
+      renderAll();
+    });
+
+    renderAll();
+  </script>
 </body>
 </html>
